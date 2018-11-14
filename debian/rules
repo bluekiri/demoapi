@@ -1,0 +1,27 @@
+#!/usr/bin/make -f
+#export DH_VERBOSE = 1
+
+%:
+	dh $@ --with=systemd
+
+override_dh_auto_build:
+	dotnet publish -c Release --self-contained -r ubuntu.18.04-x64
+	# auto-build disabled
+
+override_dh_auto_install:
+	# install application
+	mkdir -p debian/demoapi/opt/bluekiri/demoapi
+	install -D -m 755 bin/Release/netcoreapp2.1/ubuntu.18.04-x64/publish/* debian/demoapi/opt/bluekiri/demoapi
+	rm debian/demoapi/opt/bluekiri/demoapi/*.pdb #delete pdb
+
+	# install debug symbols
+	mkdir -p debian/demoapi-dbg/opt/bluekiri/demoapi
+	install -D -m 644 bin/Release/netcoreapp2.1/ubuntu.18.04-x64/publish/*.pdb debian/demoapi-dbg/opt/bluekiri/demoapi
+	dotnet-symbol --symbols bin/Release/netcoreapp2.1/ubuntu.18.04-x64/publish/ -o debian/demoapi-dbg/opt/bluekiri/demoapi
+	# auto-install disabled
+
+override_dh_shlibdeps:
+	# shilbdeps disabled
+
+override_dh_strip:
+	# strip disabled
